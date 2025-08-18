@@ -11,9 +11,14 @@ Project Kisan is a voice-first, multilingual AI assistant for small-scale farmer
 <img width="556" height="316" alt="image" src="https://github.com/user-attachments/assets/ec892371-2ce8-4d82-a710-3808f5f001bb" />
 
 
-## Application
+## Application Deployed Link : https://app-975609603775.us-central1.run.app/
 
-<img width="1918" height="1011" alt="image" src="https://github.com/user-attachments/assets/733e89a2-6346-479e-9b8e-7cc296a610c6" />
+
+https://github.com/user-attachments/assets/bc9ab4b8-2fe2-4e78-83a1-bc6fb32f7664
+
+
+
+<img width="958" height="565" alt="image" src="https://github.com/user-attachments/assets/8761c59c-09fe-4161-b8d6-8f98514d85e2" />
 
 
 
@@ -28,7 +33,7 @@ Project Kisan is a voice-first, multilingual AI assistant for small-scale farmer
 
 ## 🏗 Tech Stack
 
-- **Frontend:** Progressive Web App (PWA), WhatsApp Integration  
+- **Frontend:** Progressive Web App (PWA)
 - **Backend:** FastAPI, Google Cloud Run, Cloud Storage  
 - **AI & ML:** Google ADK, Gemma (offline fallback), Vision AI (for crop disease detection)  
 - **Integrations:** Data.Gov(AgMarknet,eNam) (market prices), Weather APIs, Government Scheme APIs (Data.gov)
@@ -44,7 +49,7 @@ cd Project-Kisan
 pip install -r requirements.txt
 
 # Run locally
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 
 
 
