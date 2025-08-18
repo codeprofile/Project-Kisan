@@ -1,12 +1,17 @@
-import traceback
+from operator import and_
 
 from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import desc
+
 from .google_adk_integration.farmbot_service import FarmBotService
+from .google_adk_integration.services.mandi_db_generation import CoreMarketDataSyncService
 from .websocket_conn import ConnectionManager
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 from fastapi.responses import HTMLResponse
+from .google_adk_integration.mandi_db.database import get_db_session
+from .google_adk_integration.mandi_db.models import MarketPrice
 import uvicorn
 import os
 from dotenv import load_dotenv
@@ -32,26 +37,82 @@ farmbot_agent = FarmBotService()
 @app.on_event("startup")
 async def startup_event():
     await farmbot_agent.initialize()
+    # mandi_db_service = CoreMarketDataSyncService()
+    # create_tables()
+    # await mandi_db_service.sync_market_data()
+
+
+async def get_market_preview_data():
+    """Get real market data for homepage preview"""
+    try:
+        with get_db_session() as db:
+            # Get latest prices for popular commodities
+            popular_commodities = ['Onion', 'Tomato', 'Potato', 'Rice', 'Wheat']
+            market_preview = []
+
+            for commodity in popular_commodities:
+                # Get latest price data for this commodity
+                latest_prices = db.query(MarketPrice).filter(
+                    and_(
+                        MarketPrice.commodity.ilike(f"%{commodity}%"),
+                        MarketPrice.arrival_date >= datetime.now() - timedelta(days=3)
+                    )
+                ).order_by(desc(MarketPrice.arrival_date)).limit(5).all()
+
+                if latest_prices:
+                    # Calculate average price and trend
+                    avg_price = sum(p.modal_price for p in latest_prices) / len(latest_prices)
+
+                    # Get price change from trend data
+                    price_change = 0
+                    trend = "stable"
+                    if latest_prices[0].price_change:
+                        price_change = latest_prices[0].price_change
+                    if latest_prices[0].trend:
+                        trend = latest_prices[0].trend
+
+                    # Get best market location
+                    best_market = max(latest_prices, key=lambda x: x.modal_price)
+                    market_location = f"{best_market.market}, {best_market.district}"
+
+                    # Map commodity names to Hindi
+                    hindi_names = {
+                        'Onion': 'प्याज',
+                        'Tomato': 'टमाटर',
+                        'Potato': 'आलू',
+                        'Rice': 'चावल',
+                        'Wheat': 'गेहूं'
+                    }
+
+                    market_preview.append({
+                        "crop_name": hindi_names.get(commodity, commodity),
+                        "current_price": round(avg_price, 0),
+                        "price_change": round(price_change, 0),
+                        "trend": trend,
+                        "market_location": market_location[:30] + "..." if len(
+                            market_location) > 30 else market_location,
+                        "data_date": latest_prices[0].arrival_date.strftime("%d-%m-%Y")
+                    })
+
+                # Stop after getting 3 commodities for preview
+                if len(market_preview) >= 3:
+                    break
+
+            return market_preview
+
+    except Exception as e:
+        print(f"Error getting market preview: {e}")
 
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     """ home page with new features"""
     # Get sample market data
-
-
-    sample_markets = [
-        {"crop_name": "गेहूं", "current_price": 2150, "price_change": 50, "trend": "up",
-         "market_location": "नई दिल्ली"},
-        {"crop_name": "चावल", "current_price": 3200, "price_change": -30, "trend": "down",
-         "market_location": "मुंबई"},
-        {"crop_name": "टमाटर", "current_price": 45, "price_change": 8, "trend": "up", "market_location": "पुणे"}
-    ]
-
+    print(await get_market_preview_data())
     context = {
         "request": request,
         "page_title": "प्रोजेक्ट किसान - Enhanced AI Agricultural Assistant",
-        "market_preview": sample_markets,
+        "market_preview": await get_market_preview_data(),
         "enhanced_features_enabled": True,
         "websocket_enabled": True,
         "version": "2.0 Enhanced"
@@ -130,7 +191,6 @@ async def enhanced_websocket_chat_endpoint(websocket: WebSocket):
     except Exception as e:
         print(f"Enhanced WebSocket error: {e}")
         conn_manager.disconnect(session_id)
-        traceback.print_exc()
 
 
 if __name__ == "__main__":
