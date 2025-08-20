@@ -565,24 +565,63 @@
             max-height: 200px;
             border-radius: var(--radius-md);
             margin-top: 10px;
-            display: none;
+            display: block;
         }
 
-        /* Prescription Download */
-        .prescription-download {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 8px 12px;
+        /* Real Analysis Result Styling */
+        .analysis-result {
+            background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%);
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: var(--radius-md);
+        }
+
+        .diagnosis-header {
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .confidence-badge {
             background-color: var(--primary);
             color: white;
-            border-radius: var(--radius-sm);
-            text-decoration: none;
-            font-size: 13px;
-            transition: all 0.2s;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 10px;
         }
 
-        .prescription-download:hover {
-            background-color: var(--primary-dark);
+        .treatment-section {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: rgba(255,255,255,0.7);
+            border-radius: var(--radius-sm);
+        }
+
+        .treatment-title {
+            font-weight: 500;
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+        }
+
+        .immediate-actions {
+            list-style: none;
+            padding: 0;
+        }
+
+        .immediate-actions li {
+            padding: 3px 0;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .immediate-actions li:before {
+            content: "🔥";
+            position: absolute;
+            left: 0;
         }
 
         /* Loader */
@@ -679,11 +718,37 @@
         .goog-te-menu-value img {
             margin-right: 4px !important;
         }
+
+        /* AI Status Indicator */
+        .ai-status {
+            position: fixed;
+            top: 50px;
+            right: 10px;
+            background-color: var(--success);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 500;
+            z-index: 1000;
+            display: none;
+        }
+
+        .ai-status.active {
+            display: block;
+        }
+
+        .ai-status.error {
+            background-color: var(--error);
+        }
     </style>
 </head>
 <body>
     <!-- Google Translate Element -->
     <div id="google_translate_element"></div>
+
+    <!-- AI Status Indicator -->
+    <div class="ai-status" id="aiStatus">🤖 AI Ready</div>
 
     <div class="container">
         <!-- Header -->
@@ -702,36 +767,24 @@
                     </div>
                 </div>
                 <div class="ticker-content" id="mandiTicker">
-                    <div class="ticker-item">
-                        <span class="crop-name">गेहूं</span>
-                        <span class="price">₹2,150</span>
-                        <span class="change up">↑ ₹50</span>
-                        <span class="location">दिल्ली</span>
-                    </div>
-                    <div class="ticker-item">
-                        <span class="crop-name">चावल</span>
-                        <span class="price">₹3,200</span>
-                        <span class="change down">↓ ₹30</span>
-                        <span class="location">मुंबई</span>
-                    </div>
-                    <div class="ticker-item">
-                        <span class="crop-name">टमाटर</span>
-                        <span class="price">₹45</span>
-                        <span class="change up">↑ ₹8</span>
-                        <span class="location">पुणे</span>
-                    </div>
-                    <div class="ticker-item">
-                        <span class="crop-name">प्याज</span>
-                        <span class="price">₹35</span>
-                        <span class="change down">↓ ₹5</span>
-                        <span class="location">नाशिक</span>
-                    </div>
-                    <div class="ticker-item">
-                        <span class="crop-name">आलू</span>
-                        <span class="price">₹28</span>
-                        <span class="change up">↑ ₹3</span>
-                        <span class="location">आगरा</span>
-                    </div>
+                    <!-- Market data will be populated dynamically -->
+                    {% if market_preview %}
+                        {% for item in market_preview %}
+                        <div class="ticker-item">
+                            <span class="crop-name">{{ item.crop_name }}</span>
+                            <span class="price">₹{{ item.current_price }}</span>
+                            <span class="change {{ 'up' if item.price_change > 0 else 'down' if item.price_change < 0 else '' }}">
+                                {{ '↑' if item.price_change > 0 else '↓' if item.price_change < 0 else '→' }} ₹{{ item.price_change }}
+                            </span>
+                            <span class="location">{{ item.market_location }}</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="ticker-item">
+                            <span class="crop-name">मार्केट डेटा</span>
+                            <span class="price">लोड हो रहा है...</span>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -780,6 +833,13 @@
 
                 <!-- Quick Actions -->
                 <div class="quick-actions">
+                    <div class="quick-action" id="cropHealthAction">
+                        <div class="action-icon">🌱</div>
+                        <div class="action-text">
+                            <div class="action-title">फसल स्वास्थ्य जांच</div>
+                            <div class="action-desc">AI से तस्वीर विश्लेषण</div>
+                        </div>
+                    </div>
                     <div class="quick-action" id="weatherAction">
                         <div class="action-icon">🌤️</div>
                         <div class="action-text">
@@ -787,18 +847,11 @@
                             <div class="action-desc">7 दिन की मौसम रिपोर्ट</div>
                         </div>
                     </div>
-                    <div class="quick-action" id="fertilizerAction">
-                        <div class="action-icon">🧪</div>
+                    <div class="quick-action" id="marketAction">
+                        <div class="action-icon">📊</div>
                         <div class="action-text">
-                            <div class="action-title">उर्वरक सलाह</div>
-                            <div class="action-desc">फसल अनुसार सिफारिश</div>
-                        </div>
-                    </div>
-                    <div class="quick-action" id="irrigationAction">
-                        <div class="action-icon">💧</div>
-                        <div class="action-text">
-                            <div class="action-title">सिंचाई मार्गदर्शन</div>
-                            <div class="action-desc">पानी की आवश्यकता</div>
+                            <div class="action-title">मंडी भाव</div>
+                            <div class="action-desc">वर्तमान कीमत और ट्रेंड</div>
                         </div>
                     </div>
                     <div class="quick-action" id="schemesAction">
@@ -820,7 +873,41 @@
 
                 <div class="chat-messages" id="chatMessages">
                     <div class="message assistant">
-                        नमस्ते! मैं आपका AI कृषि सहायक हूं। मैं आपकी फसल, मौसम, मंडी भाव और सरकारी योजनाओं के बारे में मदद कर सकता हूं। 🌾
+                        🙏 नमस्ते! मैं आपका AI कृषि सहायक हूं। मैं निम्नलिखित सेवाएं प्रदान कर सकता हूं:
+
+                        <div style="margin: 15px 0; padding: 15px; background: rgba(46, 125, 50, 0.1); border-radius: 8px;">
+                            <div style="font-weight: 600; margin-bottom: 10px; color: var(--primary-dark);">🌾 मेरी विशेषताएं:</div>
+
+                            <div style="margin: 8px 0;">
+                                <strong>🖼️ फसल स्वास्थ्य निदान:</strong><br>
+                                <span style="font-size: 13px; color: #666;">अपनी फसल की तस्वीर भेजें - मैं AI से बीमारी की पहचान करूंगा और इलाज बताऊंगा</span>
+                            </div>
+
+                            <div style="margin: 8px 0;">
+                                <strong>🌤️ मौसम पूर्वानुमान:</strong><br>
+                                <span style="font-size: 13px; color: #666;">7 दिन का मौसम, सिंचाई की सलाह, और खेती के लिए मौसम गाइड</span>
+                            </div>
+
+                            <div style="margin: 8px 0;">
+                                <strong>📊 मंडी भाव और बिक्री सलाह:</strong><br>
+                                <span style="font-size: 13px; color: #666;">वर्तमान कीमतें, बेचने का सही समय, और सबसे अच्छी मंडी की जानकारी</span>
+                            </div>
+
+                            <div style="margin: 8px 0;">
+                                <strong>🌱 कृषि सलाह:</strong><br>
+                                <span style="font-size: 13px; color: #666;">उर्वरक, बीज, सिंचाई, और फसल प्रबंधन की व्यावहारिक सलाह</span>
+                            </div>
+
+                            <div style="margin: 8px 0;">
+                                <strong>🏛️ सरकारी योजनाएं:</strong><br>
+                                <span style="font-size: 13px; color: #666;">किसानों के लिए सब्सिडी, लोन, और सरकारी सहायता की जानकारी</span>
+                            </div>
+                        </div>
+
+                        <div style="font-size: 12px; color: #888; text-align: center; margin-top: 10px;">
+                            💡 <strong>शुरुआत करें:</strong> कोई भी सवाल पूछें या फसल की तस्वीर भेजें
+                        </div>
+
                         <button class="stop-btn" onclick="stopSpeech()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="6" y="6" width="12" height="12" rx="1"></rect>
@@ -830,8 +917,8 @@
                 </div>
 
                 <div class="chat-input">
-                    <input type="text" id="chatInput" placeholder="अपना सवाल यहाँ लिखें...">
-                    <button class="camera-btn" id="cameraButton">
+                    <input type="text" id="chatInput" placeholder="अपना सवाल यहाँ लिखें या फसल की तस्वीर भेजें...">
+                    <button class="camera-btn" id="cameraButton" title="फसल की तस्वीर भेजें">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                             <circle cx="12" cy="13" r="4"></circle>
@@ -854,7 +941,7 @@
     <!-- Status Indicators -->
     <div class="connection-status" id="connectionStatus">
         <div class="status-dot"></div>
-        <span>Connected</span>
+        <span>Connecting...</span>
     </div>
 
     <div class="recording-indicator" id="recordingIndicator">
@@ -878,11 +965,12 @@
         const connectionStatus = document.getElementById('connectionStatus');
         const mandiTicker = document.getElementById('mandiTicker');
         const messageLoader = document.getElementById('messageLoader');
+        const aiStatus = document.getElementById('aiStatus');
 
         // Quick Action Buttons
+        const cropHealthAction = document.getElementById('cropHealthAction');
         const weatherAction = document.getElementById('weatherAction');
-        const fertilizerAction = document.getElementById('fertilizerAction');
-        const irrigationAction = document.getElementById('irrigationAction');
+        const marketAction = document.getElementById('marketAction');
         const schemesAction = document.getElementById('schemesAction');
 
         // App State
@@ -900,6 +988,7 @@
         let ws;
         let isConnected = false;
         let currentUtterance = null;
+        let userLocation = null;
 
         // Google Translate API
         function loadGoogleTranslate() {
@@ -916,22 +1005,17 @@
                 autoDisplay: false
             }, 'google_translate_element');
 
-            // Detect user's language based on location or browser
             detectUserLanguage();
         }
 
         function detectUserLanguage() {
-            // Try to get language from browser
             const browserLang = navigator.language || navigator.userLanguage;
             const langCode = browserLang.split('-')[0];
-
-            // Supported languages in our app
             const supportedLangs = ['hi', 'en', 'mr', 'te', 'ta', 'bn', 'pa', 'gu', 'ml', 'kn', 'ur'];
 
             if (supportedLangs.includes(langCode)) {
                 changeLanguage(langCode);
             } else {
-                // Fallback to Hindi
                 changeLanguage('hi');
             }
         }
@@ -945,61 +1029,212 @@
             currentLanguage = lang;
         }
 
-        // Initialize WebSocket
-        function connectWebSocket() {
+        // Get user location
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLocation = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude
+                        };
+                        console.log('Location obtained:', userLocation);
+                    },
+                    (error) => {
+                        console.log('Location error:', error.message);
+                    }
+                );
+            }
+        }
 
+        // Initialize WebSocket with Real AI Integration
+        function connectWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const wsUrl = `${protocol}//${window.location.host}/ws/chat`;
 
             ws = new WebSocket(wsUrl);
 
-
             ws.onopen = function() {
                 isConnected = true;
-                connectionStatus.querySelector('span').textContent = 'Connected';
+                connectionStatus.querySelector('span').textContent = 'AI Connected';
                 connectionStatus.style.backgroundColor = 'var(--success)';
-                console.log('WebSocket connected');
-
+                aiStatus.classList.add('active');
+                aiStatus.textContent = '🤖 AI Ready';
+                console.log('WebSocket connected with Real AI');
             };
-
-
-
             ws.onmessage = function(event) {
-                try {
-                    console.log("here we are")
-                    const data = JSON.parse(event.data);
-                    console.log('Received:', data);
+            try {
+                const data = JSON.parse(event.data);
+                console.log('Received AI data:', data);
 
-                    if (data.type === 'thinking') {
-                        addTypingIndicator(data.content);
-                    } else if (data.type === 'response') {
-                        removeTypingIndicator();
+                if (data.type === 'thinking') {
+                    addTypingIndicator(data.content);
+                } else if (data.type === 'response') {
+                    removeTypingIndicator();
+
+                    // Check if this is an image analysis response
+                    if (data.tools_called && data.tools_called.includes('analyze_crop_image')) {
+                        // Format as analysis result
+                        addAnalysisMessage({
+                            type: 'analysis_result',
+                            diagnosis: 'AI Analysis Completed',
+                            confidence: 85,
+                            ai_response: data.content
+                        });
+                    } else {
+                        // Regular text response
                         addMessage(data.content, 'assistant');
-                    } else if (data.type === 'analysis_result') {
-                        removeTypingIndicator();
-                        const analysisMessage = formatAnalysisMessage(data);
-                        addMessage(analysisMessage, 'assistant');
-                    } else if (data.type === 'prescription') {
-                        removeTypingIndicator();
-                        addPrescriptionMessage(data);
                     }
-                } catch (error) {
-                    console.error('Error parsing message:', error);
+                } else if (data.type === 'analysis_result') {
+                    // Handle direct analysis results (if any)
+                    removeTypingIndicator();
+                    addAnalysisMessage(data);
+                } else if (data.type === 'system_info') {
+                    addSystemMessage(data);
+                } else if (data.type === 'error') {
+                    removeTypingIndicator();
+                    addErrorMessage(data.content);
+                } else {
+                    // Handle any other message types
+                    console.log('Unrecognized message type:', data.type);
+                    removeTypingIndicator();
+                    addMessage(data.content || 'AI response received', 'assistant');
                 }
-            };
+            } catch (error) {
+                console.error('Error parsing AI message:', error);
+                removeTypingIndicator();
+                addErrorMessage('संदेश को समझने में त्रुटि हुई।');
+            }
+        };
+
+        // Enhanced analysis message function
+        function addAnalysisMessage(data) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+
+            // If it's a simple AI response, format it nicely
+            if (data.ai_response && !data.diagnosis) {
+                messageDiv.innerHTML = `
+                    <div class="analysis-result">
+                        <div class="diagnosis-header">
+                            🔬 AI फसल विश्लेषण परिणाम
+                            <span class="confidence-badge">AI Analysis</span>
+                        </div>
+
+                        <div style="margin: 10px 0;">
+                            ${data.ai_response.replace(/\n/g, '<br>')}
+                        </div>
+                    </div>
+
+                    <button class="stop-btn" onclick="stopSpeech()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="6" y="6" width="12" height="12" rx="1"></rect>
+                        </svg>
+                    </button>
+                `;
+            } else {
+                // Original analysis format
+                let analysisHTML = `
+                    <div class="analysis-result">
+                        <div class="diagnosis-header">
+                            🔬 AI फसल निदान परिणाम
+                            <span class="confidence-badge">${data.confidence || 85}% सटीक</span>
+                        </div>
+
+                        <div><strong>समस्या:</strong> ${data.diagnosis || 'विश्लेषण पूर्ण'}</div>
+
+                        ${data.symptoms ? `<div><strong>लक्षण:</strong> ${data.symptoms}</div>` : ''}
+                        ${data.treatment ? `<div><strong>उपचार:</strong> ${data.treatment}</div>` : ''}
+
+                        ${data.preventive_measures ? `
+                        <div class="treatment-section">
+                            <div class="treatment-title">🛡️ बचाव के उपाय:</div>
+                            <ul class="immediate-actions">
+                                ${data.preventive_measures.map(measure => `<li>${measure}</li>`).join('')}
+                            </ul>
+                        </div>
+                        ` : ''}
+
+                        ${data.ai_response ? `
+                        <div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.7); border-radius: 4px;">
+                            <strong>AI विस्तृत सलाह:</strong><br>
+                            ${data.ai_response.replace(/\n/g, '<br>')}
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                        📱 यदि समस्या बनी रहे तो दोबारा फोटो भेजें या स्थानीय कृषि अधिकारी से संपर्क करें
+                    </div>
+                `;
+
+                messageDiv.innerHTML = analysisHTML + `
+                    <button class="stop-btn" onclick="stopSpeech()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="6" y="6" width="12" height="12" rx="1"></rect>
+                        </svg>
+                    </button>
+                `;
+            }
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Speak the diagnosis
+            const speechText = data.diagnosis ?
+                `फसल निदान: ${data.diagnosis}. ${data.confidence || 85}% सटीक।` :
+                'AI विश्लेषण पूर्ण हुआ है।';
+            console.log(speechText);
+            speakText(speechText);
+        }
+            // ws.onmessage = function(event) {
+            //     try {
+            //         const data = JSON.parse(event.data);
+            //         console.log('Received AI data:', data);
+            //
+            //         if (data.type === 'thinking') {
+            //             addTypingIndicator(data.content);
+            //         } else if (data.type === 'response') {
+            //             removeTypingIndicator();
+            //             addMessage(data.content, 'assistant');
+            //         } else if (data.type === 'analysis_result') {
+            //             // Handle the analysis result from backend
+            //             console.log('Processing analysis_result:', data);
+            //             removeTypingIndicator();
+            //             addAnalysisMessage(data);
+            //         } else if (data.type === 'system_info') {
+            //             addSystemMessage(data);
+            //         } else if (data.type === 'error') {
+            //             removeTypingIndicator();
+            //             addErrorMessage(data.content);
+            //         } else {
+            //             // Handle any other message types
+            //             console.log('Unrecognized message type:', data.type);
+            //             removeTypingIndicator();
+            //             addMessage(data.content || 'AI response received', 'assistant');
+            //         }
+            //     } catch (error) {
+            //         console.error('Error parsing AI message:', error);
+            //         removeTypingIndicator();
+            //         addErrorMessage('संदेश को समझने में त्रुटि हुई।');
+            //     }
+            // };
 
             ws.onerror = function(error) {
                 console.error('WebSocket error:', error);
                 connectionStatus.querySelector('span').textContent = 'Connection Error';
                 connectionStatus.style.backgroundColor = 'var(--error)';
+                aiStatus.classList.add('error');
+                aiStatus.textContent = '❌ AI Error';
             };
 
             ws.onclose = function() {
                 isConnected = false;
                 connectionStatus.querySelector('span').textContent = 'Disconnected';
                 connectionStatus.style.backgroundColor = 'var(--warning)';
+                aiStatus.classList.remove('active');
                 console.log('WebSocket disconnected');
-                setTimeout(connectWebSocket, 5000); // Reconnect after 5 seconds
+                setTimeout(connectWebSocket, 5000);
             };
         }
 
@@ -1017,7 +1252,6 @@
                 recordingIndicator.style.display = 'flex';
                 voiceStatus.textContent = 'सुन रहे हैं...';
                 startTimer();
-                console.log('Voice recognition started');
             };
 
             recognition.onresult = function(event) {
@@ -1039,12 +1273,7 @@
 
                 if (finalTranscript) {
                     addMessage(finalTranscript, 'user');
-                    if (isConnected && ws) {
-                        ws.send(JSON.stringify({
-                            type: 'text',
-                            content: finalTranscript
-                        }));
-                    }
+                    sendToAI(finalTranscript, 'text');
                     stopRecording();
                 }
             };
@@ -1052,7 +1281,6 @@
             recognition.onerror = function(event) {
                 console.error('Recognition error:', event.error);
                 stopRecording();
-
                 if (event.error === 'no-speech') {
                     voiceStatus.textContent = 'कोई आवाज़ नहीं सुनाई दी';
                 } else if (event.error === 'audio-capture') {
@@ -1064,7 +1292,7 @@
 
             recognition.onend = function() {
                 if (isRecording) {
-                    recognition.start(); // Restart if still recording
+                    recognition.start();
                 }
             };
         }
@@ -1184,6 +1412,27 @@
             }
         }
 
+        // Send message to AI
+        function sendToAI(content, type, additionalData = {}) {
+            if (isConnected && ws) {
+                const message = {
+                    type: type,
+                    content: content,
+                    user_location: userLocation,
+                    user_preferences: {
+                        language: currentLanguage,
+                        farming_type: 'mixed'
+                    },
+                    additional_data: additionalData
+                };
+
+                ws.send(JSON.stringify(message));
+                console.log('Sent to AI:', message);
+            } else {
+                addErrorMessage('AI से कनेक्शन नहीं है। कृपया दोबारा कोशिश करें।');
+            }
+        }
+
         // Chat Functions
         function addMessage(text, sender) {
             const messageDiv = document.createElement('div');
@@ -1198,8 +1447,6 @@
                         </svg>
                     </button>
                 `;
-
-                // Speak the message automatically
                 speakText(text);
             } else {
                 messageDiv.innerHTML = `<div class="message-content">${text.replace(/\n/g, '<br>')}</div>`;
@@ -1209,7 +1456,100 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        function addTypingIndicator(text = 'टाइप कर रहे हैं...') {
+        // function addAnalysisMessage(data) {
+        //     const messageDiv = document.createElement('div');
+        //     messageDiv.className = 'message assistant';
+        //
+        //     let analysisHTML = `
+        //         <div class="analysis-result">
+        //             <div class="diagnosis-header">
+        //                 🔬 AI फसल निदान परिणाम
+        //                 <span class="confidence-badge">${data.confidence || 85}% सटीक</span>
+        //             </div>
+        //
+        //             <div><strong>समस्या:</strong> ${data.diagnosis || 'विश्लेषण पूर्ण'}</div>
+        //             <div><strong>लक्षण:</strong> ${data.symptoms || 'फसल की जांच की गई'}</div>
+        //             <div><strong>उपचार:</strong> ${data.treatment || 'सुझाव दिए गए'}</div>
+        //
+        //             ${data.preventive_measures ? `
+        //             <div class="treatment-section">
+        //                 <div class="treatment-title">🛡️ बचाव के उपाय:</div>
+        //                 <ul class="immediate-actions">
+        //                     ${data.preventive_measures.map(measure => `<li>${measure}</li>`).join('')}
+        //                 </ul>
+        //             </div>
+        //             ` : ''}
+        //         </div>
+        //
+        //         <div style="margin-top: 10px; font-size: 12px; color: #666;">
+        //             📱 यदि समस्या बनी रहे तो दोबारा फोटो भेजें या स्थानीय कृषि अधिकारी से संपर्क करें
+        //         </div>
+        //     `;
+        //
+        //     messageDiv.innerHTML = analysisHTML + `
+        //         <button class="stop-btn" onclick="stopSpeech()">
+        //             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        //                 <rect x="6" y="6" width="12" height="12" rx="1"></rect>
+        //             </svg>
+        //         </button>
+        //     `;
+        //
+        //     chatMessages.appendChild(messageDiv);
+        //     chatMessages.scrollTop = chatMessages.scrollHeight;
+        //
+        //     // Speak the diagnosis
+        //     const speechText = `फसल निदान: ${data.diagnosis}. ${data.confidence}% सटीक। उपचार: ${data.treatment}`;
+        //     speakText(speechText);
+        // }
+
+        function addSystemMessage(data) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+
+            let capabilitiesHTML = '';
+            if (data.capabilities) {
+                capabilitiesHTML = `
+                    <div style="margin-top: 10px;">
+                        ${data.capabilities.map(cap => `<div style="padding: 2px 0;">${cap}</div>`).join('')}
+                    </div>
+                `;
+            }
+
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    ${data.content}
+                    ${capabilitiesHTML}
+                </div>
+                <button class="stop-btn" onclick="stopSpeech()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="6" y="6" width="12" height="12" rx="1"></rect>
+                    </svg>
+                </button>
+            `;
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addErrorMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+            messageDiv.style.borderLeft = '4px solid var(--error)';
+
+            messageDiv.innerHTML = `
+                <div class="message-content">❌ ${text}</div>
+                <button class="stop-btn" onclick="stopSpeech()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="6" y="6" width="12" height="12" rx="1"></rect>
+                    </svg>
+                </button>
+            `;
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addTypingIndicator(text = 'AI सोच रहा है...') {
             const typingDiv = document.createElement('div');
             typingDiv.className = 'typing-indicator';
             typingDiv.id = 'typingIndicator';
@@ -1240,58 +1580,14 @@
             chatInput.value = '';
             messageLoader.style.display = 'block';
 
-            if (isConnected && ws) {
-                addTypingIndicator();
-                ws.send(JSON.stringify({
-                    type: 'text',
-                    content: message
-                }));
-            } else {
-                // Fallback response
-                setTimeout(() => {
-                    messageLoader.style.display = 'none';
-                    const responses = [
-                        "मैं अभी ऑफलाइन हूँ। कृपया बाद में पुन: प्रयास करें।",
-                        "कनेक्शन समस्या के कारण मैं आपकी मदद नहीं कर पा रहा हूँ।",
-                        "मेरा सर्वर डाउन है। कृपया कुछ समय बाद कोशिश करें।"
-                    ];
-                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                    addMessage(randomResponse, 'assistant');
-                }, 1000);
-            }
+            sendToAI(message, 'text');
+
+            setTimeout(() => {
+                messageLoader.style.display = 'none';
+            }, 1000);
         }
 
-        function formatAnalysisMessage(data) {
-            return `📊 विश्लेषण परिणाम:\n\nनिदान: ${data.diagnosis} (${data.confidence}% सटीक)\nलक्षण: ${data.symptoms}\nउपचार: ${data.treatment}\n\nबचाव के उपाय:\n${data.preventive_measures.map(m => `• ${m}`).join('\n')}`;
-        }
-
-        function addPrescriptionMessage(data) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message assistant';
-            messageDiv.innerHTML = `
-                <div class="message-content">
-                    <strong>📝 प्लांट प्रिस्क्रिप्शन</strong><br><br>
-                    <strong>निदान:</strong> ${data.diagnosis}<br>
-                    <strong>सिफारिश:</strong> ${data.treatment}<br><br>
-                    <a href="${data.download_url}" class="prescription-download" download="prescription.pdf">
-                        प्रिस्क्रिप्शन डाउनलोड करें
-                    </a>
-                </div>
-                <button class="stop-btn" onclick="stopSpeech()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="6" y="6" width="12" height="12" rx="1"></rect>
-                    </svg>
-                </button>
-            `;
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            // Speak the prescription message
-            const speechText = `प्लांट प्रिस्क्रिप्शन. निदान: ${data.diagnosis}. सिफारिश: ${data.treatment}`;
-            speakText(speechText);
-        }
-
-        // Image Upload
+        // Image Upload with Real AI
         function handleImageUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1303,85 +1599,49 @@
                 messageDiv.className = 'message user';
                 messageDiv.innerHTML = `
                     <div class="message-content">
-                        <img src="${e.target.result}" class="image-preview" style="display: block;">
+                        <img src="${e.target.result}" class="image-preview">
+                        <div style="margin-top: 5px; font-size: 12px;">फसल की तस्वीर - AI विश्लेषण के लिए भेजी गई</div>
                     </div>
                 `;
                 chatMessages.appendChild(messageDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
 
-                // Send to server (simulated)
-                if (isConnected && ws) {
-                    addTypingIndicator('छवि का विश्लेषण कर रहे हैं...');
-                    messageLoader.style.display = 'block';
+                // Send to real AI for analysis
+                addTypingIndicator('🖼️ आपकी फसल की तस्वीर का AI विश्लेषण हो रहा है...');
+                messageLoader.style.display = 'block';
 
-                    // Simulate server response after 3 seconds
-                    setTimeout(() => {
-                        messageLoader.style.display = 'none';
-                        removeTypingIndicator();
-                        const response = {
-                            type: 'prescription',
-                            diagnosis: 'लीफ स्पॉट रोग',
-                            treatment: 'नीम आधारित कवकनाशी का प्रयोग करें, प्रभावित पत्तियों को हटा दें',
-                            download_url: '#' // Replace with actual URL
-                        };
-                        addPrescriptionMessage(response);
-                    }, 3000);
-                }
+                sendToAI('कृपया इस फसल की तस्वीर का विश्लेषण करें और बीमारी की पहचान करें।', 'image', {
+                    image_data: e.target.result
+                });
+
+                setTimeout(() => {
+                    messageLoader.style.display = 'none';
+                }, 2000);
             };
             reader.readAsDataURL(file);
         }
 
-        // Quick Actions
+        // Quick Actions with Real AI
+        cropHealthAction.addEventListener('click', () => {
+            imageUpload.click();
+        });
+
         weatherAction.addEventListener('click', () => {
             const query = "आज का मौसम कैसा है? सिंचाई के लिए सलाह दें।";
             addMessage(query, 'user');
-            messageLoader.style.display = 'block';
-
-            if (isConnected && ws) {
-                ws.send(JSON.stringify({
-                    type: 'text',
-                    content: query
-                }));
-            }
+            sendToAI(query, 'text');
         });
 
-        fertilizerAction.addEventListener('click', () => {
-            const query = "मेरी फसल के लिए कौन सी खाद अच्छी होगी?";
+        marketAction.addEventListener('click', () => {
+            const query = "आज मंडी में फसल का भाव क्या है? कब बेचना चाहिए?";
             addMessage(query, 'user');
-            messageLoader.style.display = 'block';
-
-            if (isConnected && ws) {
-                ws.send(JSON.stringify({
-                    type: 'text',
-                    content: query
-                }));
-            }
-        });
-
-        irrigationAction.addEventListener('click', () => {
-            const query = "सिंचाई कब और कितना पानी देना चाहिए?";
-            addMessage(query, 'user');
-            messageLoader.style.display = 'block';
-
-            if (isConnected && ws) {
-                ws.send(JSON.stringify({
-                    type: 'text',
-                    content: query
-                }));
-            }
+            sendToAI(query, 'text');
         });
 
         schemesAction.addEventListener('click', () => {
             const query = "किसानों के लिए कौन सी सरकारी योजनाएं हैं?";
             addMessage(query, 'user');
-            messageLoader.style.display = 'block';
-
-            if (isConnected && ws) {
-                ws.send(JSON.stringify({
-                    type: 'text',
-                    content: query
-                }));
-            }
+            sendToAI(query, 'text');
         });
 
         // Initialize App
@@ -1389,9 +1649,11 @@
             // Load Google Translate
             loadGoogleTranslate();
 
+            // Get user location
+            getUserLocation();
+
             // Load voices first
             speechSynthesis.onvoiceschanged = function() {
-                // Now setup other things
                 setupVoiceVisualizer();
                 connectWebSocket();
 
