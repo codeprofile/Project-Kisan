@@ -58,7 +58,11 @@ Project Kisan addresses these challenges through:
 
 ### **📱 Application Preview**
 
-https://github.com/user-attachments/assets/ad9f74b4-8086-4e68-955a-751b1118bd0b
+
+
+
+https://github.com/user-attachments/assets/9c87ca7d-401c-4ba3-9361-96f4f140447f
+
 
 
 
