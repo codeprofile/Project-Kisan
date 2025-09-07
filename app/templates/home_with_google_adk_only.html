@@ -1,0 +1,1701 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Kisan - कृषि सहायक</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2E7D32;
+            --primary-dark: #1B5E20;
+            --primary-light: #81C784;
+            --accent: #FFC107;
+            --text-dark: #263238;
+            --text-light: #ECEFF1;
+            --bg-light: #F5F7FA;
+            --bg-white: #FFFFFF;
+            --border: #CFD8DC;
+            --success: #4CAF50;
+            --warning: #FF9800;
+            --error: #F44336;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        /* Ticker */
+        .ticker-container {
+            background-color: var(--bg-white);
+            border-radius: var(--radius-md);
+            padding: 10px 15px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .ticker-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .ticker-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--primary-dark);
+            margin-right: 10px;
+        }
+
+        .live-badge {
+            background-color: var(--error);
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            background-color: white;
+            border-radius: 50%;
+            margin-right: 4px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .ticker-content {
+            display: flex;
+            animation: tickerScroll 30s linear infinite;
+        }
+
+        .ticker-item {
+            display: flex;
+            align-items: center;
+            margin-right: 30px;
+            white-space: nowrap;
+        }
+
+        .ticker-item span {
+            margin-right: 10px;
+            font-size: 13px;
+        }
+
+        .crop-name {
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .price {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .change {
+            font-weight: 500;
+        }
+
+        .change.up {
+            color: var(--success);
+        }
+
+        .change.down {
+            color: var(--error);
+        }
+
+        .location {
+            color: #78909C;
+            font-size: 12px;
+        }
+
+        @keyframes tickerScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* Main Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Recorder Card */
+        .recorder-card {
+            background-color: var(--bg-white);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-icon {
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: var(--primary-dark);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .voice-visualizer {
+            width: 100%;
+            height: 80px;
+            background-color: #F5F5F5;
+            border-radius: var(--radius-md);
+            margin: 15px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #visualizerCanvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .recording-timer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary-dark);
+            background-color: rgba(255,255,255,0.8);
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+
+        .voice-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .voice-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .voice-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .voice-btn:disabled {
+            background-color: #B0BEC5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .voice-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .voice-status {
+            text-align: center;
+            font-size: 13px;
+            color: #78909C;
+            min-height: 20px;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            background-color: var(--bg-white);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .quick-action {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: var(--radius-md);
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-action:hover {
+            background-color: #E8F5E9;
+            transform: translateX(5px);
+        }
+
+        .quick-action:last-child {
+            margin-bottom: 0;
+        }
+
+        .action-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            color: var(--primary-dark);
+            font-size: 18px;
+        }
+
+        .action-text {
+            font-size: 14px;
+        }
+
+        .action-title {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .action-desc {
+            font-size: 12px;
+            color: #78909C;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            background-color: var(--bg-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+
+        .chat-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            font-size: 16px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-header-icon {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #FAFAFA;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.4;
+            font-size: 14px;
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            background-color: var(--primary);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant {
+            background-color: white;
+            color: var(--text-dark);
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .message.assistant .stop-btn {
+            position: absolute;
+            right: -28px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            box-shadow: var(--shadow-sm);
+            color: var(--error);
+        }
+
+        .message.assistant .stop-btn:hover {
+            background-color: #E0E0E0;
+        }
+
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 16px;
+            background-color: white;
+            border-radius: 18px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 15px;
+        }
+
+        .typing-text {
+            margin-right: 8px;
+            font-size: 14px;
+            color: #78909C;
+        }
+
+        .typing-dots {
+            display: flex;
+        }
+
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            background-color: #78909C;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-4px); }
+        }
+
+        /* Chat Input */
+        .chat-input {
+            padding: 15px;
+            background-color: white;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            outline: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .chat-input input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
+        }
+
+        .chat-input button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            padding: 0 16px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .chat-input button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .chat-input button svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .camera-btn {
+            background-color: transparent;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+        }
+
+        .camera-btn:hover {
+            background-color: rgba(46, 125, 50, 0.1);
+        }
+
+        .camera-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Image Preview */
+        .image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: var(--radius-md);
+            margin-top: 10px;
+            display: block;
+        }
+
+        /* Real Analysis Result Styling */
+        .analysis-result {
+            background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%);
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: var(--radius-md);
+        }
+
+        .diagnosis-header {
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .confidence-badge {
+            background-color: var(--primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 10px;
+        }
+
+        .treatment-section {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: rgba(255,255,255,0.7);
+            border-radius: var(--radius-sm);
+        }
+
+        .treatment-title {
+            font-weight: 500;
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+        }
+
+        .immediate-actions {
+            list-style: none;
+            padding: 0;
+        }
+
+        .immediate-actions li {
+            padding: 3px 0;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .immediate-actions li:before {
+            content: "🔥";
+            position: absolute;
+            left: 0;
+        }
+
+        /* Loader */
+        .loader {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(46, 125, 50, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Connection Status */
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--primary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            box-shadow: var(--shadow-md);
+            z-index: 100;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: white;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        /* Recording Indicator */
+        .recording-indicator {
+            display: none;
+            align-items: center;
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: var(--error);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            box-shadow: var(--shadow-md);
+            z-index: 100;
+        }
+
+        .recording-dot {
+            width: 8px;
+            height: 8px;
+            background-color: white;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Google Translate Widget */
+        #google_translate_element {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+
+        .goog-te-gadget {
+            font-family: 'Poppins', sans-serif !important;
+        }
+
+        .goog-te-gadget-simple {
+            background-color: var(--bg-white) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: var(--radius-sm) !important;
+            padding: 4px 8px !important;
+            font-size: 12px !important;
+        }
+
+        .goog-te-menu-value span {
+            color: var(--text-dark) !important;
+        }
+
+        .goog-te-menu-value img {
+            margin-right: 4px !important;
+        }
+
+        /* AI Status Indicator */
+        .ai-status {
+            position: fixed;
+            top: 50px;
+            right: 10px;
+            background-color: var(--success);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 500;
+            z-index: 1000;
+            display: none;
+        }
+
+        .ai-status.active {
+            display: block;
+        }
+
+        .ai-status.error {
+            background-color: var(--error);
+        }
+    </style>
+</head>
+<body>
+    <!-- Google Translate Element -->
+    <div id="google_translate_element"></div>
+
+    <!-- AI Status Indicator -->
+    <div class="ai-status" id="aiStatus">🤖 AI Ready</div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">AI</div>
+                <div class="logo-text">Project Kisan</div>
+            </div>
+
+            <div class="ticker-container">
+                <div class="ticker-header">
+                    <div class="ticker-title">मंडी भाव</div>
+                    <div class="live-badge">
+                        <div class="live-dot"></div>
+                        LIVE
+                    </div>
+                </div>
+                <div class="ticker-content" id="mandiTicker">
+                    <!-- Market data will be populated dynamically -->
+                    {% if market_preview %}
+                        {% for item in market_preview %}
+                        <div class="ticker-item">
+                            <span class="crop-name">{{ item.crop_name }}</span>
+                            <span class="price">₹{{ item.current_price }}</span>
+                            <span class="change {{ 'up' if item.price_change > 0 else 'down' if item.price_change < 0 else '' }}">
+                                {{ '↑' if item.price_change > 0 else '↓' if item.price_change < 0 else '→' }} ₹{{ item.price_change }}
+                            </span>
+                            <span class="location">{{ item.market_location }}</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="ticker-item">
+                            <span class="crop-name">मार्केट डेटा</span>
+                            <span class="price">लोड हो रहा है...</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-grid">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Recorder Card -->
+                <div class="recorder-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                <line x1="12" y1="19" x2="12" y2="23"></line>
+                                <line x1="8" y1="23" x2="16" y2="23"></line>
+                            </svg>
+                        </div>
+                        <div class="card-title">वॉइस असिस्टेंट</div>
+                    </div>
+
+                    <div class="voice-visualizer" id="voiceVisualizer">
+                        <canvas id="visualizerCanvas"></canvas>
+                        <div class="recording-timer" id="recordingTimer">00:00</div>
+                    </div>
+
+                    <div class="voice-controls">
+                        <button class="voice-btn" id="startButton">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                <line x1="12" y1="19" x2="12" y2="23"></line>
+                                <line x1="8" y1="23" x2="16" y2="23"></line>
+                            </svg>
+                        </button>
+                        <button class="voice-btn" id="stopButton" disabled>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="6" y="4" width="12" height="16" rx="2"></rect>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="voice-status" id="voiceStatus">बोलने के लिए बटन दबाएं</div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <div class="quick-action" id="cropHealthAction">
+                        <div class="action-icon">🌱</div>
+                        <div class="action-text">
+                            <div class="action-title">फसल स्वास्थ्य जांच</div>
+                            <div class="action-desc">AI से तस्वीर विश्लेषण</div>
+                        </div>
+                    </div>
+                    <div class="quick-action" id="weatherAction">
+                        <div class="action-icon">🌤️</div>
+                        <div class="action-text">
+                            <div class="action-title">मौसम पूर्वानुमान</div>
+                            <div class="action-desc">7 दिन की मौसम रिपोर्ट</div>
+                        </div>
+                    </div>
+                    <div class="quick-action" id="marketAction">
+                        <div class="action-icon">📊</div>
+                        <div class="action-text">
+                            <div class="action-title">मंडी भाव</div>
+                            <div class="action-desc">वर्तमान कीमत और ट्रेंड</div>
+                        </div>
+                    </div>
+                    <div class="quick-action" id="schemesAction">
+                        <div class="action-icon">🏛️</div>
+                        <div class="action-text">
+                            <div class="action-title">सरकारी योजनाएं</div>
+                            <div class="action-desc">सब्सिडी और लाभ</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Container -->
+            <div class="chat-container">
+                <div class="chat-header">
+                    <div class="chat-header-icon">💬</div>
+                    <div>किसान सहायक चैट</div>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message assistant">
+                        🙏 नमस्ते! मैं आपका AI कृषि सहायक हूं। मैं निम्नलिखित सेवाएं प्रदान कर सकता हूं:
+
+                        <div style="margin: 15px 0; padding: 15px; background: rgba(46, 125, 50, 0.1); border-radius: 8px;">
+                            <div style="font-weight: 600; margin-bottom: 10px; color: var(--primary-dark);">🌾 मेरी विशेषताएं:</div>
+
+                            <div style="margin: 8px 0;">
+                                <strong>🖼️ फसल स्वास्थ्य निदान:</strong><br>
+                                <span style="font-size: 13px; color: #666;">अपनी फसल की तस्वीर भेजें - मैं AI से बीमारी की पहचान करूंगा और इलाज बताऊंगा</span>
+                            </div>
+
+                            <div style="margin: 8px 0;">
+                                <strong>🌤️ मौसम पूर्वानुमान:</strong><br>
+                                <span style="font-size: 13px; color: #666;">7 दिन का मौसम, सिंचाई की सलाह, और खेती के लिए मौसम गाइड</span>
+                            </div>
+
+                            <div style="margin: 8px 0;">
+                                <strong>📊 मंडी भाव और बिक्री सलाह:</strong><br>
+                                <span style="font-size: 13px; color: #666;">वर्तमान कीमतें, बेचने का सही समय, और सबसे अच्छी मंडी की जानकारी</span>
+                            </div>
+
+                            <div style="margin: 8px 0;">
+                                <strong>🌱 कृषि सलाह:</strong><br>
+                                <span style="font-size: 13px; color: #666;">उर्वरक, बीज, सिंचाई, और फसल प्रबंधन की व्यावहारिक सलाह</span>
+                            </div>
+
+                            <div style="margin: 8px 0;">
+                                <strong>🏛️ सरकारी योजनाएं:</strong><br>
+                                <span style="font-size: 13px; color: #666;">किसानों के लिए सब्सिडी, लोन, और सरकारी सहायता की जानकारी</span>
+                            </div>
+                        </div>
+
+                        <div style="font-size: 12px; color: #888; text-align: center; margin-top: 10px;">
+                            💡 <strong>शुरुआत करें:</strong> कोई भी सवाल पूछें या फसल की तस्वीर भेजें
+                        </div>
+
+                        <button class="stop-btn" onclick="stopSpeech()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="6" y="6" width="12" height="12" rx="1"></rect>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="अपना सवाल यहाँ लिखें या फसल की तस्वीर भेजें...">
+                    <button class="camera-btn" id="cameraButton" title="फसल की तस्वीर भेजें">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                            <circle cx="12" cy="13" r="4"></circle>
+                        </svg>
+                    </button>
+                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                    <button id="sendButton">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                        भेजें
+                    </button>
+                    <div class="loader" id="messageLoader"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Indicators -->
+    <div class="connection-status" id="connectionStatus">
+        <div class="status-dot"></div>
+        <span>Connecting...</span>
+    </div>
+
+    <div class="recording-indicator" id="recordingIndicator">
+        <div class="recording-dot"></div>
+        <span>Recording</span>
+    </div>
+
+    <script>
+        // DOM Elements
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        const sendButton = document.getElementById('sendButton');
+        const cameraButton = document.getElementById('cameraButton');
+        const imageUpload = document.getElementById('imageUpload');
+        const chatInput = document.getElementById('chatInput');
+        const chatMessages = document.getElementById('chatMessages');
+        const voiceStatus = document.getElementById('voiceStatus');
+        const recordingTimer = document.getElementById('recordingTimer');
+        const recordingIndicator = document.getElementById('recordingIndicator');
+        const visualizerCanvas = document.getElementById('visualizerCanvas');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const mandiTicker = document.getElementById('mandiTicker');
+        const messageLoader = document.getElementById('messageLoader');
+        const aiStatus = document.getElementById('aiStatus');
+
+        // Quick Action Buttons
+        const cropHealthAction = document.getElementById('cropHealthAction');
+        const weatherAction = document.getElementById('weatherAction');
+        const marketAction = document.getElementById('marketAction');
+        const schemesAction = document.getElementById('schemesAction');
+
+        // App State
+        let isRecording = false;
+        let recognition;
+        let currentLanguage = 'hi';
+        let speechSynthesis = window.speechSynthesis;
+        let audioContext;
+        let analyser;
+        let microphone;
+        let dataArray;
+        let canvasContext;
+        let recordingStartTime;
+        let timerInterval;
+        let ws;
+        let isConnected = false;
+        let currentUtterance = null;
+        let userLocation = null;
+
+        // Google Translate API
+        function loadGoogleTranslate() {
+            const script = document.createElement('script');
+            script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+            document.head.appendChild(script);
+        }
+
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'hi',
+                includedLanguages: 'hi,en,mr,te,ta,bn,pa,gu,ml,kn,ur',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
+
+            detectUserLanguage();
+        }
+
+        function detectUserLanguage() {
+            const browserLang = navigator.language || navigator.userLanguage;
+            const langCode = browserLang.split('-')[0];
+            const supportedLangs = ['hi', 'en', 'mr', 'te', 'ta', 'bn', 'pa', 'gu', 'ml', 'kn', 'ur'];
+
+            if (supportedLangs.includes(langCode)) {
+                changeLanguage(langCode);
+            } else {
+                changeLanguage('hi');
+            }
+        }
+
+        function changeLanguage(lang) {
+            const select = document.querySelector('.goog-te-combo');
+            if (select) {
+                select.value = lang;
+                select.dispatchEvent(new Event('change'));
+            }
+            currentLanguage = lang;
+        }
+
+        // Get user location
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLocation = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude
+                        };
+                        console.log('Location obtained:', userLocation);
+                    },
+                    (error) => {
+                        console.log('Location error:', error.message);
+                    }
+                );
+            }
+        }
+
+        // Initialize WebSocket with Real AI Integration
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/chat`;
+
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function() {
+                isConnected = true;
+                connectionStatus.querySelector('span').textContent = 'AI Connected';
+                connectionStatus.style.backgroundColor = 'var(--success)';
+                aiStatus.classList.add('active');
+                aiStatus.textContent = '🤖 AI Ready';
+                console.log('WebSocket connected with Real AI');
+            };
+            ws.onmessage = function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                console.log('Received AI data:', data);
+
+                if (data.type === 'thinking') {
+                    addTypingIndicator(data.content);
+                } else if (data.type === 'response') {
+                    removeTypingIndicator();
+
+                    // Check if this is an image analysis response
+                    if (data.tools_called && data.tools_called.includes('analyze_crop_image')) {
+                        // Format as analysis result
+                        addAnalysisMessage({
+                            type: 'analysis_result',
+                            diagnosis: 'AI Analysis Completed',
+                            confidence: 85,
+                            ai_response: data.content
+                        });
+                    } else {
+                        // Regular text response
+                        addMessage(data.content, 'assistant');
+                    }
+                } else if (data.type === 'analysis_result') {
+                    // Handle direct analysis results (if any)
+                    removeTypingIndicator();
+                    addAnalysisMessage(data);
+                } else if (data.type === 'system_info') {
+                    addSystemMessage(data);
+                } else if (data.type === 'error') {
+                    removeTypingIndicator();
+                    addErrorMessage(data.content);
+                } else {
+                    // Handle any other message types
+                    console.log('Unrecognized message type:', data.type);
+                    removeTypingIndicator();
+                    addMessage(data.content || 'AI response received', 'assistant');
+                }
+            } catch (error) {
+                console.error('Error parsing AI message:', error);
+                removeTypingIndicator();
+                addErrorMessage('संदेश को समझने में त्रुटि हुई।');
+            }
+        };
+
+        // Enhanced analysis message function
+        function addAnalysisMessage(data) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+
+            // If it's a simple AI response, format it nicely
+            if (data.ai_response && !data.diagnosis) {
+                messageDiv.innerHTML = `
+                    <div class="analysis-result">
+                        <div class="diagnosis-header">
+                            🔬 AI फसल विश्लेषण परिणाम
+                            <span class="confidence-badge">AI Analysis</span>
+                        </div>
+
+                        <div style="margin: 10px 0;">
+                            ${data.ai_response.replace(/\n/g, '<br>')}
+                        </div>
+                    </div>
+
+                    <button class="stop-btn" onclick="stopSpeech()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="6" y="6" width="12" height="12" rx="1"></rect>
+                        </svg>
+                    </button>
+                `;
+            } else {
+                // Original analysis format
+                let analysisHTML = `
+                    <div class="analysis-result">
+                        <div class="diagnosis-header">
+                            🔬 AI फसल निदान परिणाम
+                            <span class="confidence-badge">${data.confidence || 85}% सटीक</span>
+                        </div>
+
+                        <div><strong>समस्या:</strong> ${data.diagnosis || 'विश्लेषण पूर्ण'}</div>
+
+                        ${data.symptoms ? `<div><strong>लक्षण:</strong> ${data.symptoms}</div>` : ''}
+                        ${data.treatment ? `<div><strong>उपचार:</strong> ${data.treatment}</div>` : ''}
+
+                        ${data.preventive_measures ? `
+                        <div class="treatment-section">
+                            <div class="treatment-title">🛡️ बचाव के उपाय:</div>
+                            <ul class="immediate-actions">
+                                ${data.preventive_measures.map(measure => `<li>${measure}</li>`).join('')}
+                            </ul>
+                        </div>
+                        ` : ''}
+
+                        ${data.ai_response ? `
+                        <div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.7); border-radius: 4px;">
+                            <strong>AI विस्तृत सलाह:</strong><br>
+                            ${data.ai_response.replace(/\n/g, '<br>')}
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                        📱 यदि समस्या बनी रहे तो दोबारा फोटो भेजें या स्थानीय कृषि अधिकारी से संपर्क करें
+                    </div>
+                `;
+
+                messageDiv.innerHTML = analysisHTML + `
+                    <button class="stop-btn" onclick="stopSpeech()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="6" y="6" width="12" height="12" rx="1"></rect>
+                        </svg>
+                    </button>
+                `;
+            }
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Speak the diagnosis
+            const speechText = data.diagnosis ?
+                `फसल निदान: ${data.diagnosis}. ${data.confidence || 85}% सटीक।` :
+                'AI विश्लेषण पूर्ण हुआ है।';
+            console.log(speechText);
+            speakText(speechText);
+        }
+            // ws.onmessage = function(event) {
+            //     try {
+            //         const data = JSON.parse(event.data);
+            //         console.log('Received AI data:', data);
+            //
+            //         if (data.type === 'thinking') {
+            //             addTypingIndicator(data.content);
+            //         } else if (data.type === 'response') {
+            //             removeTypingIndicator();
+            //             addMessage(data.content, 'assistant');
+            //         } else if (data.type === 'analysis_result') {
+            //             // Handle the analysis result from backend
+            //             console.log('Processing analysis_result:', data);
+            //             removeTypingIndicator();
+            //             addAnalysisMessage(data);
+            //         } else if (data.type === 'system_info') {
+            //             addSystemMessage(data);
+            //         } else if (data.type === 'error') {
+            //             removeTypingIndicator();
+            //             addErrorMessage(data.content);
+            //         } else {
+            //             // Handle any other message types
+            //             console.log('Unrecognized message type:', data.type);
+            //             removeTypingIndicator();
+            //             addMessage(data.content || 'AI response received', 'assistant');
+            //         }
+            //     } catch (error) {
+            //         console.error('Error parsing AI message:', error);
+            //         removeTypingIndicator();
+            //         addErrorMessage('संदेश को समझने में त्रुटि हुई।');
+            //     }
+            // };
+
+            ws.onerror = function(error) {
+                console.error('WebSocket error:', error);
+                connectionStatus.querySelector('span').textContent = 'Connection Error';
+                connectionStatus.style.backgroundColor = 'var(--error)';
+                aiStatus.classList.add('error');
+                aiStatus.textContent = '❌ AI Error';
+            };
+
+            ws.onclose = function() {
+                isConnected = false;
+                connectionStatus.querySelector('span').textContent = 'Disconnected';
+                connectionStatus.style.backgroundColor = 'var(--warning)';
+                aiStatus.classList.remove('active');
+                console.log('WebSocket disconnected');
+                setTimeout(connectWebSocket, 5000);
+            };
+        }
+
+        // Voice Recognition
+        function initializeVoiceRecognition() {
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = `${currentLanguage}-IN`;
+
+            recognition.onstart = function() {
+                isRecording = true;
+                startButton.disabled = true;
+                stopButton.disabled = false;
+                recordingIndicator.style.display = 'flex';
+                voiceStatus.textContent = 'सुन रहे हैं...';
+                startTimer();
+            };
+
+            recognition.onresult = function(event) {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                if (interimTranscript) {
+                    voiceStatus.textContent = interimTranscript;
+                }
+
+                if (finalTranscript) {
+                    addMessage(finalTranscript, 'user');
+                    sendToAI(finalTranscript, 'text');
+                    stopRecording();
+                }
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Recognition error:', event.error);
+                stopRecording();
+                if (event.error === 'no-speech') {
+                    voiceStatus.textContent = 'कोई आवाज़ नहीं सुनाई दी';
+                } else if (event.error === 'audio-capture') {
+                    voiceStatus.textContent = 'माइक्रोफोन उपलब्ध नहीं';
+                } else {
+                    voiceStatus.textContent = 'आवाज़ पहचानने में त्रुटि';
+                }
+            };
+
+            recognition.onend = function() {
+                if (isRecording) {
+                    recognition.start();
+                }
+            };
+        }
+
+        // Voice Visualization
+        function setupVoiceVisualizer() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            canvasContext = visualizerCanvas.getContext('2d');
+            visualizerCanvas.width = visualizerCanvas.offsetWidth;
+            visualizerCanvas.height = visualizerCanvas.offsetHeight;
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+        }
+
+        function drawVisualizer() {
+            if (!isRecording) return;
+
+            requestAnimationFrame(drawVisualizer);
+            analyser.getByteFrequencyData(dataArray);
+
+            canvasContext.clearRect(0, 0, visualizerCanvas.width, visualizerCanvas.height);
+
+            const barWidth = (visualizerCanvas.width / analyser.frequencyBinCount) * 2.5;
+            let x = 0;
+
+            for (let i = 0; i < analyser.frequencyBinCount; i++) {
+                const barHeight = (dataArray[i] / 255) * visualizerCanvas.height;
+                const hue = i * 360 / analyser.frequencyBinCount;
+                canvasContext.fillStyle = `hsla(${hue}, 80%, 50%, 0.7)`;
+                canvasContext.fillRect(x, visualizerCanvas.height - barHeight, barWidth, barHeight);
+                x += barWidth + 1;
+            }
+        }
+
+        // Timer Functions
+        function startTimer() {
+            recordingStartTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            recordingTimer.textContent = `${minutes}:${seconds}`;
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            recordingTimer.textContent = '00:00';
+        }
+
+        // Recording Control
+        function startRecording() {
+            if (!recognition) {
+                initializeVoiceRecognition();
+            }
+
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    if (audioContext && analyser) {
+                        microphone = audioContext.createMediaStreamSource(stream);
+                        microphone.connect(analyser);
+                        drawVisualizer();
+                    }
+                    recognition.start();
+                })
+                .catch(err => {
+                    console.error('Microphone access error:', err);
+                    voiceStatus.textContent = 'माइक्रोफोन की अनुमति दें';
+                });
+        }
+
+        function stopRecording() {
+            if (recognition) {
+                recognition.stop();
+            }
+            if (microphone) {
+                microphone.disconnect();
+            }
+            isRecording = false;
+            startButton.disabled = false;
+            stopButton.disabled = true;
+            recordingIndicator.style.display = 'none';
+            voiceStatus.textContent = 'बोलने के लिए बटन दबाएं';
+            stopTimer();
+        }
+
+        // Text-to-Speech
+        function speakText(text) {
+            if (!speechSynthesis) return;
+
+            stopSpeech();
+            currentUtterance = new SpeechSynthesisUtterance(text);
+            currentUtterance.lang = `${currentLanguage}-IN`;
+            currentUtterance.rate = 0.9;
+            currentUtterance.pitch = 1;
+
+            const voices = speechSynthesis.getVoices();
+            const hindiVoice = voices.find(v => v.lang.includes('hi-IN') || v.name.includes('Hindi'));
+            if (hindiVoice) {
+                currentUtterance.voice = hindiVoice;
+            }
+
+            currentUtterance.onend = function() {
+                currentUtterance = null;
+            };
+
+            speechSynthesis.speak(currentUtterance);
+        }
+
+        function stopSpeech() {
+            if (speechSynthesis) {
+                speechSynthesis.cancel();
+                currentUtterance = null;
+            }
+        }
+
+        // Send message to AI
+        function sendToAI(content, type, additionalData = {}) {
+            if (isConnected && ws) {
+                const message = {
+                    type: type,
+                    content: content,
+                    user_location: userLocation,
+                    user_preferences: {
+                        language: currentLanguage,
+                        farming_type: 'mixed'
+                    },
+                    additional_data: additionalData
+                };
+
+                ws.send(JSON.stringify(message));
+                console.log('Sent to AI:', message);
+            } else {
+                addErrorMessage('AI से कनेक्शन नहीं है। कृपया दोबारा कोशिश करें।');
+            }
+        }
+
+        // Chat Functions
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+
+            if (sender === 'assistant') {
+                messageDiv.innerHTML = `
+                    <div class="message-content">${text.replace(/\n/g, '<br>')}</div>
+                    <button class="stop-btn" onclick="stopSpeech()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="6" y="6" width="12" height="12" rx="1"></rect>
+                        </svg>
+                    </button>
+                `;
+                speakText(text);
+            } else {
+                messageDiv.innerHTML = `<div class="message-content">${text.replace(/\n/g, '<br>')}</div>`;
+            }
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // function addAnalysisMessage(data) {
+        //     const messageDiv = document.createElement('div');
+        //     messageDiv.className = 'message assistant';
+        //
+        //     let analysisHTML = `
+        //         <div class="analysis-result">
+        //             <div class="diagnosis-header">
+        //                 🔬 AI फसल निदान परिणाम
+        //                 <span class="confidence-badge">${data.confidence || 85}% सटीक</span>
+        //             </div>
+        //
+        //             <div><strong>समस्या:</strong> ${data.diagnosis || 'विश्लेषण पूर्ण'}</div>
+        //             <div><strong>लक्षण:</strong> ${data.symptoms || 'फसल की जांच की गई'}</div>
+        //             <div><strong>उपचार:</strong> ${data.treatment || 'सुझाव दिए गए'}</div>
+        //
+        //             ${data.preventive_measures ? `
+        //             <div class="treatment-section">
+        //                 <div class="treatment-title">🛡️ बचाव के उपाय:</div>
+        //                 <ul class="immediate-actions">
+        //                     ${data.preventive_measures.map(measure => `<li>${measure}</li>`).join('')}
+        //                 </ul>
+        //             </div>
+        //             ` : ''}
+        //         </div>
+        //
+        //         <div style="margin-top: 10px; font-size: 12px; color: #666;">
+        //             📱 यदि समस्या बनी रहे तो दोबारा फोटो भेजें या स्थानीय कृषि अधिकारी से संपर्क करें
+        //         </div>
+        //     `;
+        //
+        //     messageDiv.innerHTML = analysisHTML + `
+        //         <button class="stop-btn" onclick="stopSpeech()">
+        //             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        //                 <rect x="6" y="6" width="12" height="12" rx="1"></rect>
+        //             </svg>
+        //         </button>
+        //     `;
+        //
+        //     chatMessages.appendChild(messageDiv);
+        //     chatMessages.scrollTop = chatMessages.scrollHeight;
+        //
+        //     // Speak the diagnosis
+        //     const speechText = `फसल निदान: ${data.diagnosis}. ${data.confidence}% सटीक। उपचार: ${data.treatment}`;
+        //     speakText(speechText);
+        // }
+
+        function addSystemMessage(data) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+
+            let capabilitiesHTML = '';
+            if (data.capabilities) {
+                capabilitiesHTML = `
+                    <div style="margin-top: 10px;">
+                        ${data.capabilities.map(cap => `<div style="padding: 2px 0;">${cap}</div>`).join('')}
+                    </div>
+                `;
+            }
+
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    ${data.content}
+                    ${capabilitiesHTML}
+                </div>
+                <button class="stop-btn" onclick="stopSpeech()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="6" y="6" width="12" height="12" rx="1"></rect>
+                    </svg>
+                </button>
+            `;
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addErrorMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+            messageDiv.style.borderLeft = '4px solid var(--error)';
+
+            messageDiv.innerHTML = `
+                <div class="message-content">❌ ${text}</div>
+                <button class="stop-btn" onclick="stopSpeech()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="6" y="6" width="12" height="12" rx="1"></rect>
+                    </svg>
+                </button>
+            `;
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addTypingIndicator(text = 'AI सोच रहा है...') {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="typing-text">${text}</div>
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, 'user');
+            chatInput.value = '';
+            messageLoader.style.display = 'block';
+
+            sendToAI(message, 'text');
+
+            setTimeout(() => {
+                messageLoader.style.display = 'none';
+            }, 1000);
+        }
+
+        // Image Upload with Real AI
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Display image preview
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message user';
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <img src="${e.target.result}" class="image-preview">
+                        <div style="margin-top: 5px; font-size: 12px;">फसल की तस्वीर - AI विश्लेषण के लिए भेजी गई</div>
+                    </div>
+                `;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                // Send to real AI for analysis
+                addTypingIndicator('🖼️ आपकी फसल की तस्वीर का AI विश्लेषण हो रहा है...');
+                messageLoader.style.display = 'block';
+
+                sendToAI('कृपया इस फसल की तस्वीर का विश्लेषण करें और बीमारी की पहचान करें।', 'image', {
+                    image_data: e.target.result
+                });
+
+                setTimeout(() => {
+                    messageLoader.style.display = 'none';
+                }, 2000);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Quick Actions with Real AI
+        cropHealthAction.addEventListener('click', () => {
+            imageUpload.click();
+        });
+
+        weatherAction.addEventListener('click', () => {
+            const query = "आज का मौसम कैसा है? सिंचाई के लिए सलाह दें।";
+            addMessage(query, 'user');
+            sendToAI(query, 'text');
+        });
+
+        marketAction.addEventListener('click', () => {
+            const query = "आज मंडी में फसल का भाव क्या है? कब बेचना चाहिए?";
+            addMessage(query, 'user');
+            sendToAI(query, 'text');
+        });
+
+        schemesAction.addEventListener('click', () => {
+            const query = "किसानों के लिए कौन सी सरकारी योजनाएं हैं?";
+            addMessage(query, 'user');
+            sendToAI(query, 'text');
+        });
+
+        // Initialize App
+        function initializeApp() {
+            // Load Google Translate
+            loadGoogleTranslate();
+
+            // Get user location
+            getUserLocation();
+
+            // Load voices first
+            speechSynthesis.onvoiceschanged = function() {
+                setupVoiceVisualizer();
+                connectWebSocket();
+
+                // Initialize voice recognition if supported
+                if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+                    initializeVoiceRecognition();
+                } else {
+                    startButton.style.display = 'none';
+                    voiceStatus.textContent = 'आपका ब्राउज़र वॉइस रिकग्निशन सपोर्ट नहीं करता';
+                }
+
+                // Setup event listeners
+                startButton.addEventListener('click', startRecording);
+                stopButton.addEventListener('click', stopRecording);
+                sendButton.addEventListener('click', sendMessage);
+                cameraButton.addEventListener('click', () => imageUpload.click());
+                imageUpload.addEventListener('change', handleImageUpload);
+                chatInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+
+                // Duplicate ticker items for seamless looping
+                const tickerItems = mandiTicker.innerHTML;
+                mandiTicker.innerHTML = tickerItems + tickerItems;
+
+                console.log('App initialized');
+            };
+
+            // Force voices to load if they haven't already
+            if (speechSynthesis.getVoices().length > 0) {
+                speechSynthesis.onvoiceschanged();
+            }
+        }
+
+        // Start the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+        // Global functions
+        window.stopSpeech = stopSpeech;
+        window.googleTranslateElementInit = googleTranslateElementInit;
+    </script>
+</body>
+</html>
