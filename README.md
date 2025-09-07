@@ -6,6 +6,7 @@
 [![Python](https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge&logo=python)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Modern-green?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
 [![Google AI](https://img.shields.io/badge/Google_AI-Gemini-orange?style=for-the-badge&logo=google)](https://ai.google.dev)
+[![ElevenLabs](https://img.shields.io/badge/ElevenLabs-Voice_AI-purple?style=for-the-badge)](https://elevenlabs.io)
 
 </div>
 
@@ -16,7 +17,7 @@ Project Kisan is a voice-first, multilingual AI assistant for small-scale farmer
 ## 🎯 **Major Challenges Faced by Indian Farmers**
 
 <div align="center">
-<img width="560" height="314" alt="Challenges faced by Indian Farmers" src="https://github.com/user-attachments/assets/fd2c8e2a-db7c-41b8-a9ba-a6374cca3932" />
+<img width="600" height="308" alt="Challenges faced by Indian Farmers" src="https://github.com/user-attachments/assets/1fc260af-1a48-42a3-9645-e5d856947065" />
 </div>
 
 Indian farmers face multiple interconnected challenges that affect their productivity and income:
@@ -26,13 +27,14 @@ Indian farmers face multiple interconnected challenges that affect their product
 - **Difficulty in identifying crop diseases early**
 - **Complex government scheme navigation**
 - **Poor internet connectivity in rural areas**
+- **Need for natural voice interaction in local languages**
 
 ---
 
 ## 💡 **Our Solution**
 
 <div align="center">
-<img width="556" height="316" alt="Project Kisan Solution" src="https://github.com/user-attachments/assets/ec892371-2ce8-4d82-a710-3808f5f001bb" />
+<img width="556" height="316" alt="Project Kisan Solution" src="https://github.com/user-attachments/assets/67b3e1fa-8dff-4097-9d49-95334b0c3ca1" />
 </div>
 
 Project Kisan addresses these challenges through:
@@ -75,6 +77,7 @@ https://github.com/user-attachments/assets/ad9f74b4-8086-4e68-955a-751b1118bd0b
 | 📈 **Real-Time Market Intelligence** | Live mandi prices & crop trends from government sources | AgMarkNet API |
 | 🏛️ **Government Scheme Navigator** | Eligibility checks & simplified explanations | Data.gov.in APIs |
 | 🗣️ **Voice-First & Multilingual** | Supports multiple languages as enabled by Google ADK | Speech Recognition |
+| 🎙️ **Premium Voice Synthesis** | High-quality Hindi voice responses with ElevenLabs AI | ElevenLabs TTS |
 | 📶 **Offline Support** | Cached responses via Gemini model for low-network zones | PWA + Service Workers |
 
 </div>
@@ -104,6 +107,7 @@ https://github.com/user-attachments/assets/ad9f74b4-8086-4e68-955a-751b1118bd0b
 | **🎨 Frontend** | Progressive Web App (PWA) | Mobile-first, offline-capable interface |
 | **⚡ Backend** | FastAPI, Google Cloud Run, Cloud Storage | High-performance API with cloud scaling |
 | **🧠 AI & ML** | Google ADK, Gemini, Vision AI | Intelligent conversations and image analysis |
+| **🎙️ Voice AI** | ElevenLabs Text-to-Speech | Premium voice synthesis |
 | **🔗 Integrations** | AgMarkNet, eNAM, Weather APIs, Data.gov | Real-time agricultural data |
 
 </div>
@@ -116,6 +120,7 @@ https://github.com/user-attachments/assets/ad9f74b4-8086-4e68-955a-751b1118bd0b
 |---------|---------------------|----------|-------------|---------|
 | 🤖 **Google AI** | `GOOGLE_API_KEY` | ✅ **Required** | [Get Key →](https://ai.google.dev/) | AI conversations & vision |
 | 🌤️ **Weather API** | `WEATHER_API_KEY` | ✅ **Required** | [Get Key →](https://openweathermap.org/api) | Weather forecasting |
+| 🎙️ **ElevenLabs** | `ELEVENLABS_API_KEY` | ⭐ **Recommended** | [Get Key →](https://elevenlabs.io) | Premium voice synthesis |
 | 📊 **Data.gov.in** | `MANDI_API_KEY` | ⚠️ *Optional* | [Get Key →](https://www.data.gov.in/resource/current-daily-price-various-commodities-various-markets-mandi) | Government market data |
 
 ### **Environment Setup**
@@ -123,8 +128,14 @@ https://github.com/user-attachments/assets/ad9f74b4-8086-4e68-955a-751b1118bd0b
 # Create .env file
 GOOGLE_API_KEY=your_google_ai_api_key_here
 WEATHER_API_KEY=your_openweathermap_api_key
+ELEVENLABS_API_KEY=your_elevenlabs_api_key_here  # For premium voice
 MANDI_API_KEY=your_data_gov_api_key  # Optional
 ```
+### **🎙️ ElevenLabs Setup**
+1. **Sign up** at [ElevenLabs.io](https://elevenlabs.io)
+2. **Get API key** from your profile settings
+3. **Free tier**: 10,000 characters/month
+4. **Paid tiers**: Higher limits + more voice options
 
 ---
 
@@ -146,7 +157,25 @@ cp .env.example .env
 uvicorn app.main:app --reload
 ```
 
+---
+### **🎙️ Testing Voice Features**
+1. Open `http://localhost:8000`
+2. Look for **🎙️ Voice ON** toggle in chat header
+3. Send a message: "मौसम कैसा है?"
+4. Listen to high-quality Hindi voice response!
 
+### **🔧 Voice Configuration**
+Customize voice settings in `app/google_adk_integration/services/elevenlabs_voice_service.py`:
+
+```python
+# Adjust voice parameters
+self.voice_settings = {
+    "stability": 0.5,        # 0-1: Lower = more expressive
+    "similarity_boost": 0.75, # 0-1: Higher = more like original
+    "style": 0.5,            # 0-1: Style strength
+    "use_speaker_boost": True # Better quality
+}
+```
 
 ---
 
@@ -158,14 +187,16 @@ Project-Kisan/
 │   ├── google_adk_integration/
 │   │   ├── agents/              # AI agents for different domains
 │   │   ├── tools/               # AI tool functions
-│   │   ├── services/            # Business logic
-│   │   └── farmbot_service.py   # Main AI service
+│   │   ├── services/            
+│   │   │   ├── elevenlabs_voice_service.py  # 🆕 Voice synthesis
+│   │   │   └── ...              # Other business logic
+│   │   └── farmbot_service.py   # Main AI service (updated with voice)
 │   ├── templates/
-│   │   └── home.html           # Frontend interface
-│   ├── main.py                 # FastAPI application
+│   │   └── home.html           # Frontend interface (voice-enabled)
+│   ├── main.py                 # FastAPI application (voice endpoints)
 │   └── websocket_conn.py       # WebSocket connections
-├── requirements.txt
-└── README.md
+├── requirements.txt            # Updated with voice dependencies
+└── README.md                   # This file
 ```
 
 ---
@@ -174,8 +205,13 @@ Project-Kisan/
 
 ### **📚 Documentation**
 - [Google ADK](https://google.github.io/adk-docs/streaming/custom-streaming-ws/#websocket-handling) - Agent Development Kit
-Custom Audio Bidi-streaming app sample
-  
+- [ElevenLabs API](https://docs.elevenlabs.io/) - Voice synthesis documentation
+- [Speech Synthesis Guide](https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis) - Browser TTS fallback
+
+### **🎙️ Voice AI Resources**
+- [ElevenLabs Voice Library](https://elevenlabs.io/voice-library) - Explore available voices
+- [Voice Cloning Guide](https://elevenlabs.io/docs/voice-cloning) - Custom voice creation
+- [Audio Quality Tips](https://elevenlabs.io/docs/audio-quality) - Optimization guide
 
 ### **🌾 Agricultural Data Sources**
 - [AgMarkNet Portal](https://agmarknet.gov.in/) - Government market prices
